@@ -6,6 +6,7 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 from numpy import linalg as LA
+from scipy.signal import savgol_filter
 
 # Options for 2007 data
 dfName = 'Nal_filtre_FLX_NEE_01012007_31122010.csv'
@@ -161,5 +162,37 @@ plt.title("Daily and yearly seasonality of FEE")
 plt.xlabel("Half-hour time stamp")
 plt.ylabel("Normalized value of FEE")
 plt.show()
+
+ndp = 3
+Xyr = np.reshape(X[:,0],(ndp,48//ndp,-1))
+Xyr = np.nanmean(Xyr,axis=0)
+nh,ny = np.shape(Xyr)
+yrInd = np.ones((nh,1))@np.reshape(np.arange(ny),(1,-1))
+yrInd = yrInd.astype(int) % 365
+hInd = np.reshape(np.arange(nh),(-1,1))@np.ones((1,ny))
+for jh in range(nh):
+    plt.plot(yrInd[jh,:],savgol_filter(Xyr[jh,:],7,2),'-')
+plt.title('Time of day variation over the year')
+plt.show()
+
+#@@@ Find distribution of hole sizes.
+
+#@@@ Find distribution of non-hole sizes.
+wXnan = np.where(Xnan[:,0])[0]
+wXnanDiff = wXnan[1:]-wXnan[:-1]-1
+wXnanDiff = wXnanDiff[wXnanDiff>0]
+wXnanDiff = wXnanDiff[wXnanDiff<50]
+plt.hist(wXnanDiff,bins=50)
+plt.title("Distribution of available FEE data intervals")
+plt.show()
+
+wXan = np.where(Xan[:,0])[0]
+wXanDiff = wXan[1:]-wXan[:-1]-1
+wXanDiff = wXanDiff[wXanDiff>0]
+wXanDiff = wXanDiff[wXanDiff<50]
+plt.hist(wXanDiff,bins=50)
+plt.title("Distribution of nan FEE data runs")
+plt.show()
+
 
 
